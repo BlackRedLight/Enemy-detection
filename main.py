@@ -18,5 +18,5 @@ if __name__ == "__main__":
 	while True:
 		success, img = cap.read()
 		cv2.imshow("Result", img)
-		cv2.waitKey(0)
+		cv2.waitKey(1)
 		# break
