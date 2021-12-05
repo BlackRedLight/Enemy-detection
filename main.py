@@ -15,8 +15,13 @@ if __name__ == "__main__":
 	cap.set(3, frameWidth)
 	cap.set(4, frameHeight)
 	cap.set(10, 150)
+
 	while True:
 		success, img = cap.read()
 		cv2.imshow("Result", img)
-		cv2.waitKey(1)
-		# break
+		c = cv2.waitKey(1)
+		
+		if c == 27:
+			break
+	cap.release()
+	cv2.destroyAllWindows()
