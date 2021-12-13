@@ -9,7 +9,6 @@ if __name__ == "__main__":
 	cap = cv2.VideoCapture(0)
 	# cap.set(3, frameWidth)
 	# cap.set(4, frameHeight)
-	#cap.set(10, 150)  # brightness
 
 	while True:
 		success, img = cap.read()
