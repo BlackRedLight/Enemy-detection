@@ -1,1 +1,0 @@
-print('Very complicated model to simply detect pigeons')
