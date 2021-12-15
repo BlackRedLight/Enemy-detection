@@ -6,7 +6,7 @@ cap = cv2.VideoCapture(0)
 firstFrame = None
 i = 0
 background_found = False
-treshSensitivity = 15
+treshSensitivity = 25
 min_area = 5000
 
 # loop over the frames of the video
@@ -46,6 +46,7 @@ while True:
 		continue
 	elif (cnts != ()) and (background_found is False):
 		firstFrame = gray
+		i = 0
 		print('Working on it')
 		continue
 
