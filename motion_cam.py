@@ -4,10 +4,10 @@ import sys
 
 
 class MotionCamera:
-	def __init__(self):
+	def __init__(self, sensitivity=25, minArea=5000):
 		print('Initializing camera...')
 		self.cap = cv2.VideoCapture(0)  # initialize webcam
-		success, _ = self.cap.read()  # warmup camera
+		success, self.frame = self.cap.read()  # warmup camera and initailize first frame
 		if success:
 			print('Camera is working')
 		else:
@@ -15,101 +15,105 @@ class MotionCamera:
 			cv2.destroyAllWindows()
 			print('Can\'t access the camera')
 			sys.exit()
+		self.sensitivity = sensitivity
+		self.minArea = minArea
 
-	def refresh_bg(self):
-		bg = None
-		bgFound = False
+
+	def read_frame(self):
+		_, self.frame = self.cap.read()
+		return self.frame
+
+
+	def find_motion(self, frame, lastFrame):
+		frameDelta = cv2.absdiff(lastFrame, frame)
+		thresh = cv2.threshold(frameDelta, self.sensitivity, 255, cv2.THRESH_BINARY)[1]
+		thresh = cv2.dilate(thresh, None, iterations=2)
+		cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+			cv2.CHAIN_APPROX_SIMPLE)[0]	
+		return cnts
+
+
+	def convert_image(self, frame):
+		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+		gray = cv2.GaussianBlur(gray, (21, 21), 0)
+		return gray
+
+
+	def refresh_bg(self, bgCount=3):
+		self.bg = None
 		bgI = 0
+		lastFrame = None
 		while True:
-			success, frame = self.cap.read()
-			gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-			gray = cv2.GaussianBlur(gray, (21, 21), 0)
+			success, self.frame = self.cap.read()
+
+			gray = MotionCamera.convert_image(self, self.frame)
 
 			if lastFrame is None:
 				lastFrame = gray
 				continue
 
+			time.sleep(1.0)
 
-	def find_motion(self, frame, lastFrame):
-		frameDelta = cv2.absdiff(lastFrame, frame)
-		thresh = cv2.threshold(frameDelta, threshSensitivity, 255, cv2.THRESH_BINARY)[1]
-		thresh = cv2.dilate(thresh, None, iterations=2)
-		cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
-			cv2.CHAIN_APPROX_SIMPLE)[0]	
-		return cnts
+			bgCnts = self.find_motion(gray, lastFrame)
+
+			if bgCnts != ():
+				lastFrame = gray
+				bgI = 0
+				print('Searching for background') 
+
+			elif bgCnts == ():
+				bgI += 1
+				if bgI == bgCount:  # background found
+					print('Background found')
+					self.bg = gray
+					break
+
+
+	def motion_coordinates(self):
+		gray = MotionCamera.convert_image(self, self.frame)
+		cnts = MotionCamera.find_motion(self, gray, self.bg)
+
+		i = 0
+		boxes = []
+		for c in cnts:
+			# if the contour is too small, ignore it
+			if cv2.contourArea(c) >= self.minArea:
+				# compute the bounding box for the contour and draw it on the frame
+				(x, y, w, h) = cv2.boundingRect(c)
+				boxes.append([x, y, x+w, x+h])
+				i += 1
+		return i,boxes
+
+
+	def motion_frame(self):
+		boxes = MotionCamera.motion_coordinates(self)
+		markedFrame = self.frame
+		print(boxes)
+		for box in boxes[1]:
+			if box != []:
+				x, y, w, h = box
+				cv2.rectangle(markedFrame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+		return markedFrame
+
 
 	def destroy(self):
 		self.cap.release()
 		cv2.destroyAllWindows()
 		print('I through it on the ground')
 
-cam = MotionCamera()
-cam.destroy()
-sys.exit()
 
-cap = cv2.VideoCapture(0)
-firstFrame = None
-i = 0
-background_found = False
-threshSensitivity = 25
-min_area = 5000
+if __name__ == '__main__':
+	cam = MotionCamera()
+	cam.refresh_bg()
 
-# loop over the frames of the video
-while True:
-	# grab the current frame
-	success, frame = cap.read()
+	while True:
+		cam.read_frame()
+		frame = cam.motion_frame()
 
-	if background_found is False:
-		time.sleep(1.0)
+		cv2.imshow('Motion frame', frame)
+		# cv2.imshow('Bg', cam.bg)
+		if cv2.waitKey(500) == ord('q'):
+			break
 
-	if not success:
-		print('Can\'t read frames from the camera')
-		break
-	
-	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	gray = cv2.GaussianBlur(gray, (21, 21), 0)
-	
-	# initialize background frame
-	if firstFrame is None:
-		firstFrame = gray
-		continue
-	
-	# find new regions and draw contors
-	frameDelta = cv2.absdiff(firstFrame, gray)
-	thresh = cv2.threshold(frameDelta, threshSensitivity, 255, cv2.THRESH_BINARY)[1]
-	thresh = cv2.dilate(thresh, None, iterations=2)
-	cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
-		cv2.CHAIN_APPROX_SIMPLE)[0]	
-	
-	
-
-	if (cnts == ()) and (background_found is False) and (i < 3):
-		i += 1
-		if i == 3:
-			background_found = True
-		print('Background found')
-		continue
-	elif (cnts != ()) and (background_found is False):
-		firstFrame = gray
-		i = 0
-		print('Working on it')
-		continue
-
-
-	for c in cnts:
-		# if the contour is too small, ignore it
-		if cv2.contourArea(c) >= min_area:
-			# compute the bounding box for the contour and draw it on the frame
-			(x, y, w, h) = cv2.boundingRect(c)
-			cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-	
-	# cv2.imshow('Motion camera', frame)
-	# cv2.imshow('FUCK', thresh)
-	# cv2.imshow('Background', firstFrame)
-	cv2.imshow('Motion', frame)
-	if cv2.waitKey(25) == ord('q'):
-		break
-	
-cap.release()
-cv2.destroyAllWindows()
+	cam.destroy()
+	sys.exit()
