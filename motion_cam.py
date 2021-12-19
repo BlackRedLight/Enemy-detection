@@ -15,8 +15,8 @@ class MotionCamera:
 			cv2.destroyAllWindows()
 			print('Can\'t access the camera')
 			sys.exit()
-		self.sensitivity = sensitivity
-		self.minArea = minArea
+		self.sensitivity = sensitivity  # the bigger - the less motion
+		self.minArea = minArea  # min area of motion contour
 
 
 	def read_frame(self):
@@ -104,15 +104,23 @@ class MotionCamera:
 
 if __name__ == '__main__':
 	cam = MotionCamera()
-	cam.refresh_bg()
+	cam.refresh_bg()  # initialize a background
 
 	while True:
-		cam.read_frame()
-		frame = cam.motion_frame()
+		cam.read_frame()  # refresh frame in object
+		boxes = cam.motion_coordinates()
+
+		if boxes[0] == 0:  # number of boxes
+			# save it sometimes at "neg" folder with txt file
+			# and sometimes refresh background
+			pass
+		else:
+			# save it at "pos" folder with txt file with coordinates
+			# and save marked frame in another folder for understanding
+			pass
 
 		cv2.imshow('Motion frame', frame)
-		# cv2.imshow('Bg', cam.bg)
-		if cv2.waitKey(500) == ord('q'):
+		if cv2.waitKey(100) == ord('q'):
 			break
 
 	cam.destroy()
