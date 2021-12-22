@@ -1,26 +1,28 @@
+import motion_cam
 import cv2
-import matplotlib
+import sys
 
 
-if __name__ == "__main__":
-	
-	frameWidth = 640
-	frameHeight = 480
-	cap = cv2.VideoCapture(0)
-	# cap.set(3, frameWidth)
-	# cap.set(4, frameHeight)
+if __name__ == '__main__':
+	cam = motion_cam.MotionCamera()
+	cam.refresh_bg()  # initialize a background
 
 	while True:
-		success, img = cap.read()
-		
-		if not success:
-			print("Can't receive frame (stream end?). Exiting ...")
+		cam.read_frame()  # refresh frame in object
+		boxes = cam.motion_coordinates()
+
+		if boxes[0] == 0:  # number of boxes
+			# save it sometimes at "neg" folder with txt file
+			# and sometimes refresh background
+			pass
+		else:
+			# save it at "pos" folder with txt file with coordinates
+			# and save marked frame in another folder for understanding
+			pass
+
+		cv2.imshow('Motion frame', cam.motion_frame())
+		if cv2.waitKey(100) == ord('q'):
 			break
 
-		cv2.imshow("Result", img)
-		
-		if cv2.waitKey(1) == ord('q'):
-			break
-
-	cap.release()
-	cv2.destroyAllWindows()
+	cam.destroy()
+	sys.exit()

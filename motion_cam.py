@@ -39,7 +39,7 @@ class MotionCamera:
 		return gray
 
 
-	def refresh_bg(self, bgCount=3):
+	def refresh_bg(self, bgCount=5):
 		self.bg = None
 		bgI = 0
 		lastFrame = None
