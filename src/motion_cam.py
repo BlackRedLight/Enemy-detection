@@ -24,7 +24,7 @@ class MotionCamera:
 		return self.frame
 
 
-	def find_motion(self, frame, lastFrame):
+	def __find_motion(self, frame, lastFrame):
 		frameDelta = cv2.absdiff(lastFrame, frame)
 		thresh = cv2.threshold(frameDelta, self.sensitivity, 255, cv2.THRESH_BINARY)[1]
 		thresh = cv2.dilate(thresh, None, iterations=2)
@@ -33,7 +33,7 @@ class MotionCamera:
 		return cnts
 
 
-	def convert_image(self, frame):
+	def __convert_image(self, frame):
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		gray = cv2.GaussianBlur(gray, (21, 21), 0)
 		return gray
@@ -46,7 +46,7 @@ class MotionCamera:
 		while True:
 			success, self.frame = self.cap.read()
 
-			gray = MotionCamera.convert_image(self, self.frame)
+			gray = MotionCamera.__convert_image(self, self.frame)
 
 			if lastFrame is None:
 				lastFrame = gray
@@ -54,7 +54,7 @@ class MotionCamera:
 
 			time.sleep(1.0)
 
-			bgCnts = self.find_motion(gray, lastFrame)
+			bgCnts = self.__find_motion(gray, lastFrame)
 
 			if bgCnts != ():
 				lastFrame = gray
@@ -70,8 +70,8 @@ class MotionCamera:
 
 
 	def motion_coordinates(self):
-		gray = MotionCamera.convert_image(self, self.frame)
-		cnts = MotionCamera.find_motion(self, gray, self.bg)
+		gray = MotionCamera.__convert_image(self, self.frame)
+		cnts = MotionCamera.__find_motion(self, gray, self.bg)
 
 		i = 0
 		boxes = []
@@ -109,6 +109,8 @@ if __name__ == '__main__':
 	while True:
 		cam.read_frame()  # refresh frame in object
 		boxes = cam.motion_coordinates()
+		print(boxes)
+		frame = cam.motion_frame()
 
 		if boxes[0] == 0:  # number of boxes
 			# save it sometimes at "neg" folder with txt file

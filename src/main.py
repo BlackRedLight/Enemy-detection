@@ -1,6 +1,11 @@
 import motion_cam
 import cv2
 import sys
+import os
+
+
+cd = os.getcwd()
+print(cd)
 
 
 if __name__ == '__main__':
