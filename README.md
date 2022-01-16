@@ -50,7 +50,7 @@ Ones it initialized it will automaticly turn on a camera and "warm up" it by rea
 Reads a frame from the connected camera. Refreshes it in the object, so it can be used to find movements on it. It also returns this frame. Use it before `motionCoordinates()` and `motionFrame()`.
 
 ### MotionCamera.refreshBg(bg_count)
-Sets a background. It will be base frame to find movements. Ones it's called it starts to search for background. It will look for `bg_count` frames in a row, that has no difference between one another. It uses `senitivity` setting. If your camera has a hard time to find a background try to raise up your `senitivity` setting.
+Sets a background. It will be base frame to find movements. Ones it's called it starts to search for background. It will look for `bg_count` frames in a row, taken every 1 second, that has no difference between one another. It uses `senitivity` setting. If your camera has a hard time to find a background try to raise up your `senitivity` setting.
 
 ### MotionCamera.motionCoordinates()
 Find motion using `frame` and `bg` and return a tuple with number of boxes and a list of lists of coordinates of each movement box in format `(number, [[x1, y1, x2, y2],...])`.
