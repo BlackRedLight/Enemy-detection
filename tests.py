@@ -1,5 +1,5 @@
 import unittest
-import src.motion_cam
+import src.motionCam
 import os
 
 

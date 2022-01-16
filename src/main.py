@@ -1,31 +1,29 @@
-import motion_cam
+import motionCam as mc
 import cv2
 import sys
 import os
 
 
-cd = os.getcwd()
-print(cd)
-
-
 if __name__ == '__main__':
-	cam = motion_cam.MotionCamera()
-	cam.refresh_bg()  # initialize a background
+	cam = mc.MotionCamera()  # Initialize a motion camera
+	cam.refreshBg()  # Initialize a background
 
+	calm = 0  # Number of static frmaes  in a row
+	
 	while True:
-		cam.read_frame()  # refresh frame in object
-		boxes = cam.motion_coordinates()
+		cam.readFrame()  # Refresh frame in object
+		boxes = cam.motionCoordinates()  # Get number of boxes and their coordinates
 
 		if boxes[0] == 0:  # number of boxes
-			# save it sometimes at "neg" folder with txt file
-			# and sometimes refresh background
-			pass
+			''' save it sometimes at "neg" folder with txt file
+			and sometimes refresh background '''
+			
 		else:
 			# save it at "pos" folder with txt file with coordinates
 			# and save marked frame in another folder for understanding
 			pass
 
-		cv2.imshow('Motion frame', cam.motion_frame())
+		cv2.imshow('Motion frame', cam.motionFrame())
 		if cv2.waitKey(100) == ord('q'):
 			break
 
