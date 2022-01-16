@@ -34,7 +34,8 @@ class MotionCamera:
 		''' Finds contours of a motions. Returns an OpenCV contour '''
 		
 		frame_delta = cv2.absdiff(last_frame, frame)
-		self.thresh = cv2.threshold(frame_delta, self.sensitivity, 255, cv2.THRESH_BINARY)[1]
+		self.thresh = cv2.threshold(frame_delta, self.sensitivity, 255, 
+			cv2.THRESH_BINARY)[1]
 		self.thresh = cv2.dilate(self.thresh, None, iterations=2)
 		cnts = cv2.findContours(self.thresh.copy(), cv2.RETR_EXTERNAL,
 			cv2.CHAIN_APPROX_SIMPLE)[0]	
@@ -98,8 +99,8 @@ class MotionCamera:
 			# if the contour is too small, ignore it
 			if cv2.contourArea(c) >= self.min_area:
 				# compute the bounding box for the contour and draw it on the frame
-				(x, y, w, h) = cv2.boundingRect(c)
-				boxes.append([x, y, x+w, x+h])
+				x, y, w, h = cv2.boundingRect(c)
+				boxes.append([x, y, x+w, y+h])
 				i += 1
 		return i, boxes
 
@@ -111,8 +112,8 @@ class MotionCamera:
 		marked_frame = self.frame
 		for box in boxes[1]:
 			if box != []:
-				x, y, w, h = box
-				cv2.rectangle(marked_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+				x1, y1, x2, y2 = box
+				cv2.rectangle(marked_frame, (x1, y1), (x2, y2), (0, 0, 255), 1)
 		return marked_frame
 
 
