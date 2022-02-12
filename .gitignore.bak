@@ -128,5 +128,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-numpy-1.22.2+mkl-cp310-cp310-win32.whl

@@ -5,7 +5,7 @@ import numpy as np
 
 
 class MotionCamera:
-	def __init__(self, sensitivity=35, min_area=2000, angle=0):
+	def __init__(self, sensitivity=35, min_area=2000):
 		''' Warm up the camera. Raises RuntimeError if it'll fail.
 		sensitivity - the bigger - the less motion will be captured
 		min_area - minimum size of movement areas for boxes'''
@@ -22,15 +22,14 @@ class MotionCamera:
 			sys.exit()
 		self.sensitivity = sensitivity  # the bigger - the less motion captured
 		self.min_area = min_area  # min area of motion contour
-		self.angle = angle  # rotation of the camera
 
 
-	def readFrame(self):
+	def readFrame(self, angle=0):
 		''' Reads a frame from a camera and refreshes it in the object '''
 		
 		_, self.frame = self.cap.read()
 		image_center = tuple(np.array(self.frame.shape[1::-1]) / 2)
-		rot_mat = cv2.getRotationMatrix2D(image_center, self.angle, 1.0)
+		rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
 		self.frame = cv2.warpAffine(self.frame, rot_mat, self.frame.shape[1::-1], flags=cv2.INTER_LINEAR)
 		return self.frame
 
@@ -65,7 +64,7 @@ class MotionCamera:
 		bg_i = 0
 		last_frame = None
 		while True:
-			MotionCamera.readFrame(self)
+			MotionCamera.readFrame(self, 90)
 
 			gray = MotionCamera.__convertImage(self, self.frame)
 
@@ -131,12 +130,12 @@ class MotionCamera:
 
 
 if __name__ == '__main__':
-	cam = MotionCamera(angle=90)
+	cam = MotionCamera()
 	cam.refreshBg()  # initialize a background
 	frames_number = 0
 	
 	while True:
-		cam.readFrame()  # refresh frame in object
+		cam.readFrame(90)  # refresh frame in object
 		boxes = cam.motionCoordinates()
 		if boxes[0] > 0: print(boxes, frames_number)
 		
